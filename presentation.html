@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Touch — Защита проекта</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --copper:     #C97B52;
+      --copper-dim: rgba(201,123,82,0.35);
+      --white:      #ffffff;
+      --w80:        rgba(255,255,255,0.80);
+      --w60:        rgba(255,255,255,0.60);
+      --w40:        rgba(255,255,255,0.40);
+      --w15:        rgba(255,255,255,0.15);
+      --w08:        rgba(255,255,255,0.08);
+      --dark:       #070b17;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--dark);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #stage {
+      width: 100vw; height: 100vh;
+      position: relative; overflow: hidden;
+    }
+
+    /* Shared background */
+    .bg {
+      position: absolute; inset: 0;
+      background-image: url('Background_Template.jpg');
+      background-size: cover; background-position: center;
+      z-index: 0;
+    }
+
+    /* Slides */
+    .slide {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.48s ease;
+      z-index: 1;
+    }
+    .slide.active { opacity: 1; pointer-events: all; }
+
+    /* Progress */
+    #progress {
+      position: fixed; bottom: 0; left: 0; height: 2px;
+      background: linear-gradient(90deg, var(--copper), var(--copper-dim));
+      transition: width 0.4s ease; z-index: 200;
+    }
+
+    /* Counter */
+    #counter {
+      position: fixed; bottom: 22px; right: 32px;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.14em; color: var(--w40);
+      z-index: 200; font-variant-numeric: tabular-nums;
+    }
+
+    /* Hint */
+    #hint {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px; letter-spacing: 0.12em; color: var(--w40);
+      z-index: 200; transition: opacity 1.5s ease; white-space: nowrap;
+    }
+    #hint.gone { opacity: 0; pointer-events: none; }
+
+    /* Shared helpers */
+    .eyebrow {
+      font-size: clamp(10px, 0.9vw, 12px);
+      font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--copper);
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       SLIDE 1 — AI TOUCH
+    ════════════════════════════════════════════════════ */
+    #s1 { display: flex; flex-direction: row; }
+
+    #s1 .text-col {
+      flex: 1;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 10vh 8vw;
+      position: relative; z-index: 2;
+    }
+
+    #s1 .eyebrow { margin-bottom: 40px; }
+
+    #s1 .brand {
+      font-size: clamp(56px, 7.5vw, 118px);
+      font-weight: 900; line-height: 0.9; letter-spacing: -0.02em;
+      margin-bottom: 22px;
+    }
+
+    #s1 .tagline {
+      font-size: clamp(16px, 1.9vw, 28px);
+      font-weight: 300; color: var(--w60); line-height: 1.45;
+      margin-bottom: 56px; max-width: 400px;
+    }
+
+    #s1 .byline {
+      border-top: 1px solid var(--w15);
+      padding-top: 24px;
+    }
+
+    #s1 .name {
+      font-size: clamp(15px, 1.5vw, 20px);
+      font-weight: 600; color: var(--white); margin-bottom: 4px;
+    }
+
+    #s1 .role {
+      font-size: clamp(12px, 1.1vw, 15px);
+      font-weight: 400; color: var(--w60);
+    }
+
+    #s1 .photo-col {
+      width: 42%; position: relative; overflow: hidden;
+    }
+
+    #s1 .photo-col img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: right 8%; display: block;
+    }
+
+    #s1 .photo-col::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, var(--dark) 0%, rgba(7,11,23,0.25) 38%, transparent 62%);
+      z-index: 1;
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       SLIDE 2 — ПРОБЛЕМЫ МСБ
+    ════════════════════════════════════════════════════ */
+    #s2 {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 8vh 10vw;
+    }
+
+    #s2 .eyebrow { margin-bottom: 28px; }
+
+    #s2 .title {
+      font-size: clamp(26px, 3.2vw, 50px);
+      font-weight: 800; line-height: 1.1; margin-bottom: 48px;
+    }
+
+    #s2 .problems { display: flex; flex-direction: column; gap: 22px; }
+
+    #s2 .problem-row {
+      display: flex; align-items: center; gap: 22px;
+    }
+
+    #s2 .problem-icon {
+      width: 34px; height: 34px; flex-shrink: 0; color: var(--copper);
+    }
+
+    #s2 .problem-text {
+      font-size: clamp(15px, 1.65vw, 23px);
+      font-weight: 400; color: var(--w80); line-height: 1.3;
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       SLIDE 3 — УСЛУГИ (screenshot fully visible)
+    ════════════════════════════════════════════════════ */
+    #s3 {
+      display: flex; flex-direction: column;
+      padding: 5vh 6vw 4vh; gap: 24px;
+    }
+
+    #s3 .header-row { flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
+
+    #s3 .title {
+      font-size: clamp(22px, 2.8vw, 44px);
+      font-weight: 800; line-height: 1.1;
+    }
+
+    #s3 .screenshot-wrap {
+      flex: 1; min-height: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    #s3 .screenshot-wrap img {
+      max-width: 100%; max-height: 100%;
+      width: auto; height: auto;
+      object-fit: contain; display: block;
+      border-radius: 8px;
+      box-shadow: 0 20px 70px rgba(0,0,0,0.6);
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       SLIDE 4 — ПОРТФОЛИО (two-column: text left, screenshot right)
+    ════════════════════════════════════════════════════ */
+    #s4 {
+      display: flex; flex-direction: row;
+      padding: 7vh 6vw; gap: 5vw;
+      align-items: center;
+    }
+
+    #s4 .text-col {
+      width: 24%; flex-shrink: 0;
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 40px;
+    }
+
+    #s4 .title {
+      font-size: clamp(22px, 2.6vw, 40px);
+      font-weight: 800; line-height: 1.1;
+    }
+
+    #s4 .categories {
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    #s4 .cat-item {
+      display: flex; align-items: center; gap: 14px;
+      font-size: clamp(14px, 1.45vw, 22px);
+      font-weight: 400; color: var(--w80);
+    }
+
+    #s4 .cat-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--copper); flex-shrink: 0;
+    }
+
+    #s4 .portfolio-link {
+      display: flex; flex-direction: column; gap: 6px;
+      padding-top: 22px;
+      border-top: 1px solid var(--w15);
+    }
+
+    #s4 .portfolio-link-label {
+      font-size: clamp(9px, 0.8vw, 11px);
+      font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--w40);
+    }
+
+    #s4 .portfolio-link a {
+      font-family: 'Courier New', monospace;
+      font-size: clamp(12px, 1.15vw, 16px);
+      font-weight: 500; letter-spacing: 0.04em;
+      color: var(--copper); text-decoration: none;
+      transition: color 0.2s ease;
+      word-break: break-all;
+    }
+
+    #s4 .portfolio-link a:hover { color: var(--white); }
+
+    #s4 .screenshot-wrap {
+      flex: 1; min-width: 0; min-height: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    #s4 .screenshot-wrap img {
+      max-width: 100%; max-height: 94vh;
+      width: auto; height: auto;
+      object-fit: contain; display: block;
+      border-radius: 8px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.65);
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       SLIDE 5 — ПОЧЕМУ AI TOUCH
+    ════════════════════════════════════════════════════ */
+    #s5 {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 8vh 10vw;
+    }
+
+    #s5 .eyebrow { margin-bottom: 28px; }
+
+    #s5 .title {
+      font-size: clamp(30px, 4vw, 62px);
+      font-weight: 800; line-height: 1.05; margin-bottom: 56px;
+    }
+
+    #s5 .creds {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+    }
+
+    #s5 .cred-block {
+      display: flex; flex-direction: column; gap: 16px;
+      padding: 26px 22px;
+      border: 1px solid var(--w15); border-radius: 8px;
+    }
+
+    #s5 .cred-icon {
+      width: 30px; height: 30px; color: var(--copper);
+    }
+
+    #s5 .cred-value {
+      font-size: clamp(22px, 2.8vw, 40px);
+      font-weight: 800; line-height: 1; color: var(--white);
+    }
+
+    #s5 .cred-value.cred-langs {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      font-size: clamp(13px, 1.2vw, 17px);
+      font-weight: 700; letter-spacing: 0.08em;
+    }
+
+    #s5 .cred-langs span {
+      padding: 6px 12px;
+      border: 1px solid var(--w40);
+      border-radius: 999px;
+      color: var(--white);
+      background: var(--w08);
+    }
+
+    #s5 .cred-label {
+      font-size: clamp(12px, 1.05vw, 14px);
+      font-weight: 400; color: var(--w60); line-height: 1.55;
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       SLIDE 6 — ЭТАП И ЦЕЛЬ
+    ════════════════════════════════════════════════════ */
+    #s6 {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 8vh 10vw;
+    }
+
+    #s6 .eyebrow { margin-bottom: 32px; }
+
+    #s6 .two-col {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8vw; margin-bottom: 44px; align-items: start;
+    }
+
+    #s6 .col-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--w40); margin-bottom: 20px;
+    }
+
+    #s6 .done-list { display: flex; flex-direction: column; gap: 14px; }
+
+    #s6 .done-item {
+      display: flex; align-items: center; gap: 12px;
+      font-size: clamp(14px, 1.5vw, 20px);
+      font-weight: 400; color: var(--w80);
+    }
+
+    #s6 .check {
+      width: 18px; height: 18px; color: var(--copper); flex-shrink: 0;
+    }
+
+    #s6 .goal-label {
+      font-size: clamp(11px, 1vw, 14px);
+      font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--w40); margin-bottom: 18px;
+    }
+
+    #s6 .goal-big {
+      font-size: clamp(26px, 3.4vw, 52px);
+      font-weight: 700; line-height: 1.1;
+    }
+
+    #s6 .divider {
+      width: 100%; height: 1px; background: var(--w15); margin-bottom: 26px;
+    }
+
+    #s6 .question-text {
+      font-size: clamp(14px, 1.5vw, 20px);
+      font-weight: 400; color: var(--w60);
+      margin-bottom: 20px; max-width: 680px; line-height: 1.6;
+    }
+
+    #s6 .niches { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    #s6 .niche {
+      padding: 9px 20px;
+      border: 1px solid var(--copper-dim); border-radius: 4px;
+      font-size: clamp(12px, 1.1vw, 15px);
+      font-weight: 500; color: var(--w80);
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       SLIDE 7 — QR
+    ════════════════════════════════════════════════════ */
+    #s7 { display: flex; flex-direction: row; }
+
+    #s7 .text-col {
+      flex: 1;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 10vh 8vw;
+    }
+
+    #s7 .eyebrow { margin-bottom: 28px; }
+
+    #s7 .headline {
+      font-size: clamp(44px, 6.5vw, 96px);
+      font-weight: 900; line-height: 0.95; letter-spacing: -0.02em;
+      margin-bottom: 28px;
+    }
+
+    #s7 .url {
+      font-size: clamp(12px, 1.2vw, 15px); font-weight: 400;
+      color: var(--copper); letter-spacing: 0.06em; margin-bottom: 30px;
+      font-family: 'Courier New', monospace;
+    }
+
+    #s7 .cta {
+      font-size: clamp(13px, 1.3vw, 17px);
+      font-weight: 300; color: var(--w60);
+      max-width: 340px; line-height: 1.7;
+    }
+
+    #s7 .qr-col {
+      width: 42%;
+      display: flex; align-items: center; justify-content: center;
+      padding: 8vh 6vw;
+      border-left: 1px solid var(--w08);
+    }
+
+    #s7 .qr-col img {
+      width: 100%; max-width: 330px;
+      border-radius: 12px; background: #fff; padding: 20px;
+    }
+
+    #s7 .qr-wrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 18px;
+    }
+
+    #s7 .qr-site {
+      font-size: clamp(16px, 1.7vw, 24px); font-weight: 500;
+      color: var(--w80); letter-spacing: 0.04em;
+      font-family: 'Courier New', monospace;
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       SPEAKER NOTES
+    ════════════════════════════════════════════════════ */
+    .notes {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92); z-index: 500;
+      padding: 60px 80px;
+      flex-direction: column; justify-content: center;
+    }
+    .notes.visible { display: flex; }
+    .notes h3 {
+      font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--copper); margin-bottom: 20px;
+    }
+    .notes p {
+      font-size: 22px; font-weight: 300;
+      line-height: 1.7; color: var(--w80); max-width: 820px;
+    }
+    .notes .close-hint {
+      margin-top: 32px; font-size: 11px;
+      color: var(--w40); letter-spacing: 0.12em;
+    }
+  </style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="bg"></div>
+
+  <!-- ══════════════════════════════════════════
+       СЛАЙД 1 — AI TOUCH
+  ══════════════════════════════════════════ -->
+  <section class="slide active" id="s1">
+    <div class="text-col">
+      <p class="eyebrow">AI Touch · Защита проекта · 2026</p>
+      <h1 class="brand">AI Touch</h1>
+      <p class="tagline">Студия цифровых продуктов<br>для малого и среднего бизнеса</p>
+      <div class="byline">
+        <p class="name">Dr. Njasik Touch</p>
+        <p class="role">Основатель · Калифорния, США</p>
+      </div>
+    </div>
+    <div class="photo-col">
+      <img src="Njasik%20Touch.png" alt="Dr. Njasik Touch">
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       СЛАЙД 2 — ПРОБЛЕМЫ МСБ
+  ══════════════════════════════════════════ -->
+  <section class="slide" id="s2">
+    <p class="eyebrow">Контекст</p>
+    <h2 class="title">С чем сталкивается малый бизнес</h2>
+    <div class="problems">
+
+      <div class="problem-row">
+        <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.42 19.42 0 01-3.33-2.67m-2.67-3.34a19.79 19.79 0 01-3.07-8.63A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91"/>
+          <line x1="23" y1="1" x2="1" y2="23"/>
+        </svg>
+        <span class="problem-text">Потерянные лиды — нет ответа в нужный момент</span>
+      </div>
+
+      <div class="problem-row">
+        <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span class="problem-text">Медленный отклик — клиент уходит к конкуренту</span>
+      </div>
+
+      <div class="problem-row">
+        <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <span class="problem-text">Нет автоматизации — рутина съедает рабочее время</span>
+      </div>
+
+      <div class="problem-row">
+        <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        <span class="problem-text">Ограниченные ресурсы — нет своей IT-команды</span>
+      </div>
+
+      <div class="problem-row">
+        <svg class="problem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"/>
+          <polyline points="8 6 2 12 8 18"/>
+        </svg>
+        <span class="problem-text">Дорогая разработка — агентства недоступны по цене</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       СЛАЙД 3 — УСЛУГИ
+  ══════════════════════════════════════════ -->
+  <section class="slide" id="s3">
+    <div class="header-row">
+      <p class="eyebrow">Что делает AI Touch</p>
+      <h2 class="title">Три направления. Одна цель.</h2>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="Services.png" alt="AI Touch — услуги">
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       СЛАЙД 4 — ПОРТФОЛИО
+  ══════════════════════════════════════════ -->
+  <section class="slide" id="s4">
+    <div class="text-col">
+      <h2 class="title">12 реализованных проектов</h2>
+      <div class="categories">
+        <div class="cat-item"><span class="cat-dot"></span>AI-ассистенты</div>
+        <div class="cat-item"><span class="cat-dot"></span>Веб-приложения</div>
+        <div class="cat-item"><span class="cat-dot"></span>Telegram-боты</div>
+        <div class="cat-item"><span class="cat-dot"></span>Лендинги</div>
+      </div>
+      <div class="portfolio-link">
+        <span class="portfolio-link-label">Посмотреть портфолио</span>
+        <a href="https://ai-touch-site.vercel.app/" target="_blank" rel="noopener">ai-touch-site.vercel.app</a>
+      </div>
+    </div>
+    <div class="screenshot-wrap">
+      <img src="Portfolio.png" alt="AI Touch — портфолио">
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       СЛАЙД 5 — ПОЧЕМУ AI TOUCH
+  ══════════════════════════════════════════ -->
+  <section class="slide" id="s5">
+    <p class="eyebrow">Почему AI Touch</p>
+    <h2 class="title">Что отличает AI Touch<br>от обычной студии</h2>
+    <div class="creds">
+
+      <div class="cred-block">
+        <svg class="cred-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+        <div class="cred-value">30+</div>
+        <div class="cred-label">лет в медицине<br>в Германии</div>
+      </div>
+
+      <div class="cred-block">
+        <svg class="cred-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+        </svg>
+        <div class="cred-value">Германия → США</div>
+        <div class="cred-label">Два рынка.<br>Прямой опыт.</div>
+      </div>
+
+      <div class="cred-block">
+        <svg class="cred-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+        <div class="cred-value cred-langs">
+          <span>RU</span><span>DE</span><span>EN</span>
+        </div>
+        <div class="cred-label">Три языка.<br>Три рынка.</div>
+      </div>
+
+      <div class="cred-block">
+        <svg class="cred-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div class="cred-value">Системно</div>
+        <div class="cred-label">Мышление врача —<br>решение бизнес-задач</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       СЛАЙД 6 — ЭТАП И ЦЕЛЬ
+  ══════════════════════════════════════════ -->
+  <section class="slide" id="s6">
+    <p class="eyebrow">Где я сейчас</p>
+    <div class="two-col">
+      <div>
+        <p class="col-label">Сделано</p>
+        <div class="done-list">
+          <div class="done-item">
+            <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Студия AI Touch создана
+          </div>
+          <div class="done-item">
+            <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Портфолио запущено
+          </div>
+          <div class="done-item">
+            <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            12 проектов реализовано
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="col-label">Цель — 90 дней</p>
+        <p class="goal-label">Следующий этап</p>
+        <p class="goal-big">Первые платящие<br>клиенты</p>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <p class="question-text">
+      Главный вопрос: на какую нишу сфокусироваться для максимально быстрого выхода на первую выручку?
+    </p>
+    <div class="niches">
+      <div class="niche">Клиники и медицина</div>
+      <div class="niche">Малый и средний бизнес</div>
+      <div class="niche">Локальный бизнес США</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       СЛАЙД 7 — QR
+  ══════════════════════════════════════════ -->
+  <section class="slide" id="s7">
+    <div class="text-col">
+      <p class="eyebrow">AI Touch · Портфолио</p>
+      <h2 class="headline">Посмотрите<br>сами.</h2>
+      <p class="url">ai-touch-site.vercel.app</p>
+      <p class="cta">Если вы знаете бизнес, которому это нужно — поговорим после защиты.</p>
+    </div>
+    <div class="qr-col">
+      <div class="qr-wrap">
+        <img src="QR%20Code%20AI%20Touch.svg" alt="QR — AI Touch Portfolio">
+        <p class="qr-site">ai-touch-site.vercel.app</p>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /stage -->
+
+<div id="counter">1 / 7</div>
+<div id="progress" style="width:14.28%"></div>
+<div id="hint">← → или пробел · N — заметки · F — полный экран</div>
+
+<div class="notes" id="notes">
+  <h3>Заметки докладчика — слайд <span id="note-num">1</span></h3>
+  <p id="note-text"></p>
+  <p class="close-hint">Нажмите N чтобы закрыть</p>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  const hint = document.getElementById('hint');
+  const notesPanel = document.getElementById('notes');
+  const noteNum = document.getElementById('note-num');
+  const noteText = document.getElementById('note-text');
+
+  let current = 0;
+  const total = slides.length;
+  let notesOpen = false;
+
+  const notes = [
+    'Меня зовут Нязик Тач. Я основатель AI Touch — студии цифровых продуктов для малого и среднего бизнеса. Сегодня я представляю проект на защите. AI Touch — это не идея и не стартап на этапе концепции. Это работающая студия с живым портфолио.',
+    'С чем сталкивается малый бизнес? Потерянные лиды — нет ответа в нужный момент. Медленный отклик — клиент уходит к конкуренту. Нет автоматизации — рутина поглощает время. Ограниченные ресурсы — нет своей IT-команды. Дорогая разработка — агентства недоступны. AI Touch закрывает именно эти боли.',
+    'AI Touch работает в трёх направлениях: сайты и лендинги, веб и мобильные приложения, ИИ-агенты и автоматизация. Три инструмента — одна цель: рост бизнеса клиента.',
+    'Вот портфолио AI Touch. Двенадцать проектов: разные индустрии, разные рынки. Стоматология, локальный бизнес в США, немецкие компании, AI-инструменты. Часть — MVP, часть — рабочие демо, часть — опубликованные сайты. Главное: каждый проект доведён до результата.',
+    'Что отличает AI Touch от обычной студии? Тридцать лет в медицине в Германии — это аналитическое мышление и понимание реальных бизнес-задач, а не теории. Два рынка — прямой опыт работы в Европе и США. Три языка — русский, немецкий, английский. Я понимаю проблему клиента изнутри.',
+    'Студия работает. Портфолио живое. Цель на 90 дней — первый платящий клиент. Вот мой главный вопрос: у меня три жизнеспособных ниши. Клиники и медицина — там мой самый сильный бэкграунд. Малый бизнес — самый широкий спрос. Локальный бизнес США — географически рядом. На какой нише сфокусироваться для максимально быстрого выхода на первую выручку?',
+    'Посмотрите портфолио прямо сейчас. Если вы знаете бизнес, которому это нужно — поговорим после защиты.'
+  ];
+
+  function go(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    counter.textContent = `${current + 1} / ${total}`;
+    progress.style.width = `${((current + 1) / total) * 100}%`;
+    if (notesOpen) showNotes();
+  }
+
+  function showNotes() {
+    noteNum.textContent = current + 1;
+    noteText.textContent = notes[current];
+    notesPanel.classList.add('visible');
+    notesOpen = true;
+  }
+
+  function hideNotes() {
+    notesPanel.classList.remove('visible');
+    notesOpen = false;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'n' || e.key === 'N') {
+      notesOpen ? hideNotes() : showNotes();
+      return;
+    }
+    if (notesOpen) return;
+    hint.classList.add('gone');
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'ArrowLeft') go(current - 1);
+    if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (notesOpen) { hideNotes(); return; }
+    hint.classList.add('gone');
+    if (e.clientX > window.innerWidth / 2) go(current + 1);
+    else go(current - 1);
+  });
+
+  setTimeout(() => hint.classList.add('gone'), 6000);
+</script>
+</body>
+</html>
